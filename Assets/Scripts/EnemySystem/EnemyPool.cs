@@ -42,6 +42,37 @@ namespace EmotionsGame.Enemies
             }
         }
 
+        public void ResetPool()
+        {
+            if (Instance != this)
+            {
+                return;
+            }
+
+            EnemyController[] activeInstances = new EnemyController[active.Count];
+            active.CopyTo(activeInstances);
+            foreach (EnemyController instance in activeInstances)
+            {
+                Return(instance);
+            }
+
+            EnemyController[] resting = available.ToArray();
+            available.Clear();
+            foreach (EnemyController instance in resting)
+            {
+                if (instance == null)
+                {
+                    continue;
+                }
+
+                instance.gameObject.SetActive(false);
+                instance.transform.SetParent(transform, false);
+                instance.transform.localPosition = Vector3.zero;
+                instance.transform.localRotation = Quaternion.identity;
+                available.Enqueue(instance);
+            }
+        }
+
         public EnemyController Get(Vector3 position, Quaternion rotation)
         {
             EnemyController instance;

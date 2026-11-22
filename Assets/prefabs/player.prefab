@@ -74,6 +74,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4e761e08ec1982f11a4114e8019b8e9c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2217246803885756822}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4e761e08ec1982f11a4114e8019b8e9c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8828640524102351611}
   m_SourcePrefab: {fileID: 100100000, guid: 4e761e08ec1982f11a4114e8019b8e9c, type: 3}
 --- !u!1 &4785153307690823416 stripped
 GameObject:
@@ -128,3 +131,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &8828640524102351611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4785153307690823416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b4b5ac09d777fbc5a3d7626843c2a3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmotionsGame.Health.PlayerHealth
+  maxLives: 3
+  currentLives: 0
+  invulnerabilityDuration: 1
+  blinkInterval: 0.1
+  blinkRenderers: []
+  movement: {fileID: 0}

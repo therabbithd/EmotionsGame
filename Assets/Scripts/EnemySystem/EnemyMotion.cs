@@ -27,6 +27,11 @@ namespace EmotionsGame.Enemies
             SwitchTo(Mode.Patrol);
         }
 
+        public void SetTarget(Transform targetTransform)
+        {
+            target = targetTransform;
+        }
+
         public void SetAggressive(bool aggressive)
         {
             if (config == null)

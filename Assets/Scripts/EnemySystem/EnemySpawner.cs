@@ -33,7 +33,15 @@ namespace EmotionsGame.Enemies
 
         private void Start()
         {
-            target = TargetResolver.Resolve(assignedTarget, targetTag, ref target);
+            ResetSpawner();
+        }
+
+        public void ResetSpawner()
+        {
+            StopSpawnRoutine();
+            target = null;
+            waveIndex = 0;
+            EnemyPool.Instance?.ResetPool();
             spawnRoutine = StartCoroutine(SpawnLoop());
         }
 

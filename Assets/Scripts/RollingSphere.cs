@@ -20,6 +20,7 @@ public class RollingSphere : MonoBehaviour
 
     private Rigidbody _rb;
     private int _currentDimension = 0; // 0 = X Axis (Lateral), 1 = Z Axis (Frontal)
+    private bool movementEnabled = true;
 
     private void Awake()
     {
@@ -28,13 +29,33 @@ public class RollingSphere : MonoBehaviour
         UpdateCameras();
     }
 
+    /// <summary>Enables or disables player control without changing the Rigidbody setup.</summary>
+    public void SetMovementEnabled(bool enabled)
+    {
+        movementEnabled = enabled;
+        if (!enabled && _rb != null)
+        {
+            _rb.linearVelocity = Vector3.zero;
+        }
+    }
+
     private void Update()
     {
+        if (!movementEnabled)
+        {
+            return;
+        }
+
         HandleDimensionSwitch();
     }
 
     private void FixedUpdate()
     {
+        if (!movementEnabled)
+        {
+            return;
+        }
+
         float inputHorizontal = 0f;
         float inputDepth = 0f;
 

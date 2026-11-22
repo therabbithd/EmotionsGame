@@ -52,6 +52,10 @@ namespace EmotionsGame.Enemies
             if (target == null)
             {
                 target = TargetResolver.Resolve(null, targetTag, ref target);
+                if (target != null)
+                {
+                    motion.SetTarget(target);
+                }
             }
 
             if (target == null)
@@ -117,7 +121,7 @@ namespace EmotionsGame.Enemies
 
         private void StopRuntime()
         {
-            tweenAnimator.Stop();
+            tweenAnimator.StopAndReset();
             motion.Shutdown();
         }
 

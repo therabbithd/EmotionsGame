@@ -9,6 +9,8 @@ namespace EmotionsGame.Enemies
         private Tween floatTween;
         private Tween rotationTween;
         private Vector3 restingLocalPosition;
+        private Quaternion restingLocalRotation;
+        private bool hasBaseState;
 
         public void Play(EnemyConfigSO config)
         {
@@ -19,6 +21,8 @@ namespace EmotionsGame.Enemies
             }
 
             restingLocalPosition = transform.localPosition;
+            restingLocalRotation = transform.localRotation;
+            hasBaseState = true;
             float targetY = restingLocalPosition.y + config.FloatAmplitude;
 
             floatTween = transform.DOLocalMoveY(targetY, config.FloatDuration)
@@ -43,9 +47,21 @@ namespace EmotionsGame.Enemies
             rotationTween = null;
         }
 
-        private void OnDisable()
+        public void StopAndReset()
         {
             Stop();
+            if (!hasBaseState)
+            {
+                return;
+            }
+
+            transform.localPosition = restingLocalPosition;
+            transform.localRotation = restingLocalRotation;
+        }
+
+        private void OnDisable()
+        {
+            StopAndReset();
         }
 
         private void OnDestroy()

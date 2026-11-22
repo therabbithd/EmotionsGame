@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3165198965331441350}
   - component: {fileID: 5078343653230048327}
   - component: {fileID: 4166322478120825922}
+  - component: {fileID: 2137784132734050096}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -72,6 +73,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EmotionsGame.Enemies.EnemyController
   targetTag: Player
+--- !u!114 &2137784132734050096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2484663684885481746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401225a00ffed5dc8a74ff9009ced32e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmotionsGame.Health.EnemyHealth
+  maxHealth: 100
+  currentHealth: 0
+  scoreValue: 10
+  destructionEffect: {fileID: 0}
+  effectLifetime: 2
+  deathClip: {fileID: 0}
 --- !u!1 &5321141681346915226
 GameObject:
   m_ObjectHideFlags: 0
