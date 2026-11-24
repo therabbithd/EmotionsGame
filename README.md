@@ -3,6 +3,8 @@
 </p>
 
 # EmotionsGame
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/therabbithd/EmotionsGame)
+
 
 A playable Unity 6 game where a smiley sphere rolls across two orthogonal dimensions, switches perspective with Cinemachine, and survives pooled enemy waves, tweened obstacles and a lives-and-score loop. It now includes a complete game shell: menu, HUD, pause, settings, credits, end screens, persistent progress and three distinct levels.
 
