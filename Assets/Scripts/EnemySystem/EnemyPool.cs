@@ -8,6 +8,8 @@ namespace EmotionsGame.Enemies
     {
         public static EnemyPool Instance { get; private set; }
 
+        public int ActiveCount => active.Count;
+
         [SerializeField] private EnemyController prefab;
         [SerializeField, Min(0)] private int prewarmCount = 8;
         [SerializeField] private bool expandable = true;

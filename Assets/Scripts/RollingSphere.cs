@@ -1,4 +1,5 @@
 // RollingSphere.cs
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
@@ -23,13 +24,21 @@ public class RollingSphere : MonoBehaviour
     private int _currentDimension = 0; // 0 = X Axis (Lateral), 1 = Z Axis (Frontal)
     private bool movementEnabled = true;
 
+    public static event Action<int> DimensionChanged;
+
+    public static int ActiveDimension { get; private set; }
+
+    public int CurrentDimension => _currentDimension;
+
     private void Awake()
-{
-    _rb = GetComponent<Rigidbody>();
-    _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-    transform.rotation = Quaternion.Euler(0f, _currentDimension == 0 ? 0f : 90f, faceZAngle);
-    UpdateCameras();
-}
+    {
+        _rb = GetComponent<Rigidbody>();
+        _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        transform.rotation = Quaternion.Euler(0f, _currentDimension == 0 ? 0f : 90f, faceZAngle);
+        ActiveDimension = _currentDimension;
+        UpdateCameras();
+        DimensionChanged?.Invoke(_currentDimension);
+    }
 
     /// <summary>Enables or disables player control without changing the Rigidbody setup.</summary>
     public void SetMovementEnabled(bool enabled)
@@ -112,7 +121,9 @@ public class RollingSphere : MonoBehaviour
         if (switchPressed)
         {
             _currentDimension = (_currentDimension == 0) ? 1 : 0;
+            ActiveDimension = _currentDimension;
             UpdateCameras();
+            DimensionChanged?.Invoke(_currentDimension);
         }
     }
 

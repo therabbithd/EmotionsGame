@@ -2,6 +2,11 @@ using UnityEngine;
 
 namespace EmotionsGame.Health
 {
+    public interface IDamageDealerHitHandler
+    {
+        void OnDealtDamage();
+    }
+
     /// <summary>Reusable 3D trigger/collision damage source. Resolves the target by interface.</summary>
     [DisallowMultipleComponent]
     public sealed class DamageDealer : MonoBehaviour
@@ -20,6 +25,11 @@ namespace EmotionsGame.Health
             if (target != null)
             {
                 target.TakeDamage(damage);
+                IDamageDealerHitHandler handler = GetComponentInParent<IDamageDealerHitHandler>();
+                if (handler != null)
+                {
+                    handler.OnDealtDamage();
+                }
             }
         }
 

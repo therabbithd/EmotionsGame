@@ -17,14 +17,15 @@ namespace EmotionsGame.Enemies
         [SerializeField, Min(0f)] private float activationDistance = 15f;
 
         [Header("Waves")]
-        [SerializeField, Min(1)] private int enemiesPerWave = 3;
-        [SerializeField, Min(0)] private int waveIncrement = 1;
-        [SerializeField, Min(0f)] private float wavePause = 4f;
+        [SerializeField, Min(1)] private int enemiesPerWave = 1;
+        [SerializeField, Min(0)] private int waveIncrement = 0;
+        [SerializeField, Min(0f)] private float wavePause = 8f;
+        [SerializeField, Min(0)] private int maxActiveEnemies = 2;
 
         [Header("Spawn Timing & Spread")]
-        [SerializeField, Min(0f)] private float spawnInterval = 0.6f;
-        [SerializeField, Min(0.05f)] private float minimumSpawnInterval = 0.15f;
-        [SerializeField, Min(0f)] private float intervalReductionPerWave = 0.05f;
+        [SerializeField, Min(0f)] private float spawnInterval = 1.2f;
+        [SerializeField, Min(0.05f)] private float minimumSpawnInterval = 0.5f;
+        [SerializeField, Min(0f)] private float intervalReductionPerWave = 0f;
         [SerializeField, Min(0f)] private float spawnRadius = 5f;
 
         private Transform target;
@@ -89,7 +90,7 @@ namespace EmotionsGame.Enemies
             }
 
             EnemyPool pool = EnemyPool.Instance;
-            if (pool == null)
+            if (pool == null || (maxActiveEnemies > 0 && pool.ActiveCount >= maxActiveEnemies))
             {
                 return;
             }

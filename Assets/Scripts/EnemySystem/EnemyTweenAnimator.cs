@@ -30,13 +30,16 @@ namespace EmotionsGame.Enemies
                 .SetEase(config.FloatEase)
                 .SetLoops(-1, LoopType.Yoyo);
 
-            Vector3 axis = config.RotationAxis.normalized;
-            Vector3 targetRotation = config.FullTurn ? axis * 360f : axis;
+            if (!HasFixedRotation())
+            {
+                Vector3 axis = config.RotationAxis.normalized;
+                Vector3 targetRotation = config.FullTurn ? axis * 360f : axis;
 
-            rotationTween = transform.DORotate(targetRotation, config.RotationDuration, RotateMode.FastBeyond360)
-                .SetDelay(config.RotationDelay)
-                .SetEase(config.RotationEase)
-                .SetLoops(-1, LoopType.Incremental);
+                rotationTween = transform.DORotate(targetRotation, config.RotationDuration, RotateMode.FastBeyond360)
+                    .SetDelay(config.RotationDelay)
+                    .SetEase(config.RotationEase)
+                    .SetLoops(-1, LoopType.Incremental);
+            }
         }
 
         public void Stop()
@@ -56,7 +59,16 @@ namespace EmotionsGame.Enemies
             }
 
             transform.localPosition = restingLocalPosition;
-            transform.localRotation = restingLocalRotation;
+            if (!HasFixedRotation())
+            {
+                transform.localRotation = restingLocalRotation;
+            }
+        }
+
+        private bool HasFixedRotation()
+        {
+            EnemyDimensionRotation dimensionRotation = GetComponent<EnemyDimensionRotation>();
+            return dimensionRotation != null && dimensionRotation.enabled;
         }
 
         private void OnDisable()

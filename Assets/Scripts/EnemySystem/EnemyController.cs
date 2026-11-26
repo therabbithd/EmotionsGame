@@ -4,7 +4,7 @@ namespace EmotionsGame.Enemies
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(EnemyTweenAnimator), typeof(EnemyMotion))]
-    public sealed class EnemyController : MonoBehaviour, IDamageable
+    public sealed class EnemyController : MonoBehaviour, IDamageable, EmotionsGame.Health.IDamageDealerHitHandler
     {
         [SerializeField] private string targetTag = "Player";
 
@@ -64,6 +64,12 @@ namespace EmotionsGame.Enemies
             }
 
             float distance = Vector3.Distance(transform.position, target.position);
+            if (distance <= config.AttackDistance)
+            {
+                motion.NotifyHit();
+                return;
+            }
+
             float detection = config.DetectionRadius;
             float release = detection * config.ReleaseRadiusMultiplier;
 
@@ -91,6 +97,16 @@ namespace EmotionsGame.Enemies
             {
                 Defeat();
             }
+        }
+
+        public void OnDealtDamage()
+        {
+            if (!active)
+            {
+                return;
+            }
+
+            motion.NotifyHit();
         }
 
         private void Defeat()

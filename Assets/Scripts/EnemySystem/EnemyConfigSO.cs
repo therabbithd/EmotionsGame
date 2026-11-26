@@ -38,6 +38,12 @@ namespace EmotionsGame.Enemies
         [SerializeField, Min(0f)] private float maxPause = 3f;
         [SerializeField, Min(0.01f)] private float waypointReachDistance = 0.5f;
 
+        [Header("Hit & Run")]
+        [SerializeField, Min(0.1f)] private float attackDistance = 1.5f;
+        [SerializeField, Min(0.01f)] private float retreatSpeed = 4f;
+        [SerializeField, Min(0f)] private float retreatDuration = 1.5f;
+        [SerializeField, Min(0f)] private float postHitCooldown = 2f;
+
         [Header("Proximity Activation")]
         [SerializeField, Min(0f)] private float detectionRadius = 6f;
         [SerializeField, Min(1f)] private float releaseRadiusMultiplier = 1.5f;
@@ -61,6 +67,10 @@ namespace EmotionsGame.Enemies
         public float MinPause => minPause;
         public float MaxPause => maxPause;
         public float WaypointReachDistance => waypointReachDistance;
+        public float AttackDistance => attackDistance;
+        public float RetreatSpeed => retreatSpeed;
+        public float RetreatDuration => retreatDuration;
+        public float PostHitCooldown => postHitCooldown;
         public float DetectionRadius => detectionRadius;
         public float ReleaseRadiusMultiplier => releaseRadiusMultiplier;
         public ActivationBehavior Behavior => activationBehavior;
