@@ -5,7 +5,7 @@ using UnityEngine;
 namespace EmotionsGame.Health
 {
     /// <summary>
-    /// Player lives, temporary invulnerability and blink feedback.
+    /// Player lives, one-hit shield, temporary invulnerability and blink feedback.
     /// UI and other systems subscribe to events instead of polling this component.
     /// </summary>
     [DisallowMultipleComponent]
@@ -14,6 +14,9 @@ namespace EmotionsGame.Health
         [Header("Lives")]
         [SerializeField, Min(1)] private int maxLives = 3;
         [SerializeField] private int currentLives;
+
+        [Header("Shield")]
+        [SerializeField, Min(0)] private int shieldCharges;
 
         [Header("Invulnerability")]
         [SerializeField, Min(0f)] private float invulnerabilityDuration = 1f;
@@ -30,10 +33,12 @@ namespace EmotionsGame.Health
 
         public int CurrentLives => currentLives;
         public int MaxLives => maxLives;
+        public int ShieldCharges => shieldCharges;
         public bool IsInvulnerable => invulnerable;
         public bool IsDead => dead;
 
         public event Action<int, int> LivesChanged;
+        public event Action<int> ShieldChanged;
         public event Action Died;
 
         private void Awake()
@@ -58,6 +63,7 @@ namespace EmotionsGame.Health
         {
             StopInvulnerability();
             currentLives = maxLives;
+            shieldCharges = 0;
             dead = false;
             SetRenderersVisible(true);
 
@@ -67,11 +73,17 @@ namespace EmotionsGame.Health
             }
 
             LivesChanged?.Invoke(currentLives, maxLives);
+            ShieldChanged?.Invoke(shieldCharges);
         }
 
         public void TakeDamage(int amount)
         {
             if (amount <= 0 || dead || invulnerable)
+            {
+                return;
+            }
+
+            if (TryConsumeShield())
             {
                 return;
             }
@@ -105,6 +117,32 @@ namespace EmotionsGame.Health
 
             currentLives = next;
             LivesChanged?.Invoke(currentLives, maxLives);
+        }
+
+        /// <summary>Grants charges that each block one incoming hit.</summary>
+        public void AddShield(int charges = 1)
+        {
+            if (dead || charges <= 0)
+            {
+                return;
+            }
+
+            shieldCharges += charges;
+            ShieldChanged?.Invoke(shieldCharges);
+        }
+
+        /// <summary>Consumes one shield charge and returns true when the hit was blocked.</summary>
+        public bool TryConsumeShield()
+        {
+            if (dead || invulnerable || shieldCharges <= 0)
+            {
+                return false;
+            }
+
+            shieldCharges--;
+            ShieldChanged?.Invoke(shieldCharges);
+            invulnerabilityRoutine = StartCoroutine(InvulnerabilityRoutine());
+            return true;
         }
 
         private void Die()
@@ -178,6 +216,7 @@ namespace EmotionsGame.Health
         {
             maxLives = Mathf.Max(1, maxLives);
             currentLives = Mathf.Clamp(currentLives, 0, maxLives);
+            shieldCharges = Mathf.Max(0, shieldCharges);
             invulnerabilityDuration = Mathf.Max(0f, invulnerabilityDuration);
             blinkInterval = Mathf.Max(0.01f, blinkInterval);
         }

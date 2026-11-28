@@ -6,7 +6,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/therabbithd/EmotionsGame)
 
 
-A playable Unity 6 game where a smiley sphere rolls across two orthogonal dimensions, switches perspective with Cinemachine, and survives pooled enemy waves, tweened obstacles and a lives-and-score loop. It now includes a complete game shell: menu, HUD, pause, settings, credits, end screens, persistent progress and three distinct levels.
+A playable Unity 6 game where a smiley sphere rolls across two orthogonal dimensions, switches perspective with Cinemachine, and survives pooled enemy waves, tweened obstacles and a lives-and-score loop. It now includes a complete game shell: menu, HUD, pause, settings, credits, end screens, persistent progress and three distinct levels, plus lucky blocks that spawn either an enemy or a friendly shield pickup.
 
 **Stack:** Unity `6000.6.4f1` · URP `17.6.0` · Cinemachine `6.6.0` · Input System `1.20.0` · uGUI · DOTween
 
@@ -15,10 +15,10 @@ A playable Unity 6 game where a smiley sphere rolls across two orthogonal dimens
 ## See the loop
 
 <p align="center">
-  <img src="./assets/readme/gameplay-loop.svg" width="100%" alt="Gameplay loop: dimension switching and camera priority, damage and player lives, then life pickups and enemy score">
+  <img src="./assets/readme/gameplay-loop.svg" width="100%" alt="Gameplay loop: dimension switching and camera priority, damage, shields and player lives, then pickups and enemy score">
 </p>
 
-`Assets/Scenes/MainMenu.unity` boots the game shell. `GameFlowController` loads `Level1`, `Level2` and `Level3`, creates the uGUI HUD, wires pause/settings/credits/end screens and writes progress to a JSON save. Enemies come from configuration and return to a pool; hazards damage targets through interfaces; each animated object owns its tweens so recycling one system does not kill another.
+`Assets/Scenes/MainMenu.unity` boots the game shell. `GameFlowController` loads `Level1`, `Level2` and `Level3`, creates the uGUI HUD, wires pause/settings/credits/end screens and writes progress to a JSON save. Enemies come from configuration and return to a pool; hazards damage targets through interfaces; lucky blocks roll between spawning an enemy and spawning a friendly pickup that grants a shield; each animated object owns its tweens so recycling one system does not kill another.
 
 ## Play it
 
@@ -37,7 +37,7 @@ A playable Unity 6 game where a smiley sphere rolls across two orthogonal dimens
 | Confirm | `Enter` | Button South (`A` / `Cross`) |
 | Back / cancel | `Backspace` | Button East (`B` / `Circle`) |
 
-The three levels are `Assets/Scenes/Level1.unity` (6 defeats), `Level2.unity` (10 defeats, 95 s) and `Level3.unity` (14 defeats, 120 s). Progress and SFX volume persist in `Application.persistentDataPath/emotions_game_save.json`; the HUD shows lives, score, ammo, objective and time.
+The three levels are `Assets/Scenes/Level1.unity` (6 defeats), `Level2.unity` (10 defeats, 95 s) and `Level3.unity` (14 defeats, 120 s). Level 1 also places two `FRIENDS` lucky blocks: touching one rolls either an enemy or a friendly shield pickup. Progress and SFX volume persist in `Application.persistentDataPath/emotions_game_save.json`; the HUD shows lives, score, ammo, objective and time.
 
 ## How the player moves
 
@@ -95,17 +95,20 @@ The enemy system is data-driven and pooled. `EnemySpawner` reads `EnemyConfigSO`
 
 | File | Job |
 | :--- | :--- |
-| `Health/PlayerHealth.cs` | Lives, invulnerability window, renderer blink, `LivesChanged` / `Died` events and movement freeze. |
+| `Health/PlayerHealth.cs` | Lives, shield charges, invulnerability window, renderer blink, `LivesChanged` / `ShieldChanged` / `Died` events and movement freeze. |
 | `Health/EnemyHealth.cs` | Enemy health, score payout, death feedback and pool-safe reset. |
 | `Health/DamageDealer.cs` | Trigger/collision damage filtered by tag and resolved through `EmotionsGame.Health.IDamageable`. |
 | `Health/ILifeTarget.cs` | `AddLives(int)` contract used by life pickups. |
 | `Score/ScoreManager.cs` | Singleton score aggregate with `ScoreChanged`, `AddScore` and `ResetScore`. |
 | `PowerUps/PowerUp.cs` | Trigger pickup with self-owned bob and spin tweens; grants life or ammo through the game state. |
 | `PowerUps/PowerUpType.cs` | `Life` and `Ammo` enum values. |
+| `PowerUps/FriendlyEnemyPickup.cs` | Chasing pickup that grants shield charges on contact; owns its tweens and supports a runtime target. |
 | `Gameplay/AmmoController.cs` | Spends ammo and spawns pooled projectiles. |
 | `Gameplay/DashController.cs` | Temporary speed burst with runtime movement tuning. |
 
 Add `DamageDealer` to a trigger hazard to damage anything with the target tag and a health component. `LifePowerUp.prefab` and `AmmoPowerUp.prefab` are ready to drop into a scene; their idle tweens are rebuilt on enable and killed on disable or destroy.
+
+`PlayerHealth.AddShield(int)` grants charges that each block one hit, `TryConsumeShield()` spends one charge and starts the invulnerability window, and `ShieldChanged` notifies listeners. `ResetHealth()` clears the shield, so a pooled or restarted player never inherits charges.
 
 ## Tweened obstacles
 
@@ -115,7 +118,20 @@ Add `DamageDealer` to a trigger hazard to damage anything with the target tag an
 - `RotatingObstacle` — spins in local space; use full turns with `LoopType.Restart` for a seamless loop.
 - `ScalingObstacle` — pulses between the authored local scale and `targetScale`.
 
-Each component owns one tween, captures its authored transform as the base state, and restores that pose on disable. `CaptureBaseState()` should be called after a pool or chunk repositions an object; `Stop()`, `StopAndReset()` and `Restart()` handle manual control. Add your own collider and `DamageDealer` if an obstacle should hurt the player.
+Each component owns one tween, captures its authored transform as the base state, and restores that pose on disable. `CaptureBaseState()` should be called after a pool or chunk repositions an object; `Stop()`, `StopAndReset()` and `Restart()` handle manual control. Add your own collider and `DamageDealer` if an obstacle should hurt the player. `HazardObstacle` is the damage-on-contact option: it filters by tag, resolves damage through `IDamageable` and applies optional knockback.
+
+## Lucky blocks and friendly shields
+
+`Assets/Scripts/Obstacles/LuckyBlock.cs` is a one-shot block opened by the first player trigger or collision. It plays a `DOPunchScale` open animation and rolls a 50/50 reward:
+
+- an enemy taken from `EnemyPool` when no `enemyPrefab` is assigned (otherwise a direct `Instantiate`), initialized with `enemyConfig` and the player target;
+- a `FriendlyEnemyPickup` from `friendlyEnemyPrefab` that chases the player and grants shield charges.
+
+`spawnPoint` / `spawnOffset` position the reward, `destroyAfterUse` and `destroyDelay` remove the block, and `openPunchDuration` / `openPunchScale` / `openPunchVibrato` / `openPunchElasticity` tune the feedback. Spawned objects get a short linked `DOScale` entrance tween, so they are cleaned up with the object. `Assets/prefabs/FRIENDS.prefab` (using `Assets/models/FRIENDS.fbx`) is a ready-to-place lucky block; `Assets/prefabs/FriendsPickup.prefab` is the friendly shield pickup.
+
+`Assets/Scripts/PowerUps/FriendlyEnemyPickup.cs` moves like an enemy, calls `PlayerHealth.AddShield(shieldCharges)` on contact and plays the pickup SFX. `chasePlayer`, `moveSpeed`, `turnSpeed`, `stopDistance` and `flattenMovement` tune the approach; `SetTarget(Transform)` overrides tag lookup when a spawner already knows the player; `CleanupTweens()` and disable/destroy kill its tweens.
+
+A shield charge blocks one hit, including hits from `HazardObstacle`, which consumes the charge before applying damage or knockback. A blocked hit starts the same invulnerability window and renderer blink as normal damage.
 
 ## Project layout
 
@@ -139,8 +155,8 @@ Assets/
 │   ├── EnemySystem/       # config, spawner, pool, controller, motion, tween animator
 │   ├── Health/            # player/enemy health, damage dealer, damage contracts
 │   ├── Score/             # score aggregate
-│   ├── PowerUps/          # pickup behaviour and type enum
-│   └── Obstacles/         # tween-safe local movement, rotation and scaling
+│   ├── PowerUps/          # life/ammo pickups, friendly shield pickup and type enum
+│   └── Obstacles/         # tween-safe movement, rotation, scaling, hazards and lucky blocks
 ├── Resources/UI/
 │   └── GameUI.prefab
 ├── Levels/                # enemy and level ScriptableObject configs
@@ -153,9 +169,11 @@ Assets/
 │   └── AmmoPowerUp.prefab
 ├── Settings/              # URP assets, volume profiles and game input actions
 ├── Textures/              # smiley texture and 3D material assets
-├── models/                # source meshes
+├── models/                # source meshes, including FRIENDS.fbx
 ├── prefabs/
-│   └── player.prefab
+│   ├── player.prefab
+│   ├── FRIENDS.prefab     # lucky block
+│   └── FriendsPickup.prefab # friendly shield pickup
 └── Plugins/Demigiant/DOTween/  # DOTween runtime and editor assemblies
 ```
 

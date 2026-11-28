@@ -49,6 +49,11 @@ namespace EmotionsGame.Obstacles
                 return;
             }
 
+            if (damageable is PlayerHealth playerHealth && playerHealth.TryConsumeShield())
+            {
+                return;
+            }
+
             damageable.TakeDamage(damage);
             ApplyKnockback(targetObject, hitPoint);
         }
